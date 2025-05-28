@@ -1,16 +1,14 @@
 package com.ssg.order.controller;
 
-import com.ssg.order.controller.dto.OrderCreateRequestDTO;
-import com.ssg.order.controller.dto.OrderInfoResponseDTO;
-import com.ssg.order.controller.dto.OrderItemInfoResponseDTO;
-import com.ssg.order.controller.dto.ProductInfoResponseDTO;
-import com.ssg.order.entity.OrderItem;
+import com.ssg.order.controller.dto.*;
+import com.ssg.order.exception.OrderException;
 import com.ssg.order.service.OrderService;
 import com.ssg.order.service.dto.OrderDTO;
 import com.ssg.order.service.dto.OrderItemDTO;
 import com.ssg.order.service.dto.ProductDTO;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,21 +22,30 @@ public class OrderController {
         this.orderService = orderService;
     }
 
+    /** 주문조회 기능*/
     @GetMapping("/{ordId}")
     public OrderInfoResponseDTO searchOrder(@PathVariable Long ordId){
 
         OrderDTO order = orderService.findByOrdId(ordId);
 
-        OrderInfoResponseDTO result = OrderInfoResponseDTO.builder()
-                .orderItems(new ArrayList<>())
-                .ordId(order.ordId())
-                .build();
+        List<OrderItemInfoResponseDTO> resultItems = new ArrayList<>();
+        BigDecimal totalAmount = BigDecimal.ZERO;
 
         for(OrderItemDTO item : order.orderItems()){
-            result.orderItems().add(
+
+            BigDecimal paidAmt = BigDecimal.valueOf(item.ordQty()).multiply(item.product().stdUprc().subtract(item.product().dcAmt()));
+
+            if("00".equals(item.ordItemSt())) {
+                //주문총합 = 기존총합 + (주문수량*(기존단가-할인금액))
+                totalAmount = totalAmount.add(paidAmt);
+            }
+
+            resultItems.add(
                     OrderItemInfoResponseDTO.builder()
                             .ordItemId(item.ordItemId())
                             .ordQty(item.ordQty())
+                            .ordItemSt(item.ordItemSt())
+                            .paidAmt(paidAmt)
                             .product(ProductInfoResponseDTO.builder()
                                     .prdId(item.product().prdId())
                                     .prdNm(item.product().prdNm())
@@ -49,9 +56,14 @@ public class OrderController {
             );
         }
 
-        return result;
+        return OrderInfoResponseDTO.builder()
+                .orderItems(resultItems)
+                .totOrdAmt(totalAmount)
+                .ordId(order.ordId())
+                .build();
     }
 
+    /** 주문생성 기능*/
     @PostMapping()
     public OrderInfoResponseDTO createOrder(
             @RequestBody List<OrderCreateRequestDTO> orders
@@ -73,16 +85,24 @@ public class OrderController {
 
         OrderDTO order = orderService.createOrder(orderItems);
 
-        OrderInfoResponseDTO result = OrderInfoResponseDTO.builder()
-                .orderItems(new ArrayList<>())
-                .ordId(order.ordId())
-                .build();
+        List<OrderItemInfoResponseDTO> resultItems = new ArrayList<>();
+        BigDecimal totalAmount = BigDecimal.ZERO;
 
         for(OrderItemDTO item : order.orderItems()){
-            result.orderItems().add(
+
+            BigDecimal paidAmt = BigDecimal.valueOf(item.ordQty()).multiply(item.product().stdUprc().subtract(item.product().dcAmt()));
+
+            if("00".equals(item.ordItemSt())) {
+                //주문총합 = 기존총합 + (주문수량*(기존단가-할인금액))
+                totalAmount = totalAmount.add(paidAmt);
+            }
+
+            resultItems.add(
                     OrderItemInfoResponseDTO.builder()
                             .ordItemId(item.ordItemId())
                             .ordQty(item.ordQty())
+                            .ordItemSt(item.ordItemSt())
+                            .paidAmt(paidAmt)
                             .product(ProductInfoResponseDTO.builder()
                                     .prdId(item.product().prdId())
                                     .prdNm(item.product().prdNm())
@@ -93,6 +113,51 @@ public class OrderController {
             );
         }
 
-        return result;
+        return OrderInfoResponseDTO.builder()
+                .orderItems(resultItems)
+                .totOrdAmt(totalAmount)
+                .ordId(order.ordId())
+                .build();
+    }
+
+    /** 주문취소 기능*/
+    @DeleteMapping("/{ordId}/product/{prdId}")
+    public OrderCancelResponseDTO cancelOrder(@PathVariable Long ordId, @PathVariable Long prdId){
+        OrderDTO order = orderService.cancelOrder(ordId, prdId);
+
+        BigDecimal totalAmount = BigDecimal.ZERO; //취소 후 전체 남은 금액
+        BigDecimal refundAmount = null; //환불금액
+        ProductDTO resultProduct = null; //취소된 상품
+
+        for(OrderItemDTO item : order.orderItems()){
+            //해당 아이템 결제금액
+            BigDecimal itemAmount = BigDecimal.valueOf(item.ordQty()).multiply(item.product().stdUprc().subtract(item.product().dcAmt()));
+            if("00".equals(item.ordItemSt())) {
+                //주문총합 = 기존총합 + (주문수량*(기존단가-할인금액))
+                totalAmount = totalAmount.add(itemAmount);
+            }
+            else if("01".equals(item.ordItemSt()) && prdId.equals(item.product().prdId())){
+                refundAmount = itemAmount;
+                resultProduct = item.product();
+            }
+        }
+
+        if(resultProduct == null || refundAmount == null){
+            throw new OrderException("조회 비즈니스 에러입니다.");
+        }
+
+       return OrderCancelResponseDTO.builder()
+               .rfnAmt(refundAmount)
+               .totOrdAmt(totalAmount)
+               .product(
+                       ProductInfoResponseDTO.builder()
+                               .dcAmt(resultProduct.dcAmt())
+                               .prdId(resultProduct.prdId())
+                               .prdNm(resultProduct.prdNm())
+                               .stdUprc(resultProduct.stdUprc())
+                               .build()
+               )
+               .build();
+
     }
 }

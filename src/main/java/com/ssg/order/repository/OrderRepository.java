@@ -3,6 +3,8 @@ package com.ssg.order.repository;
 import com.ssg.order.entity.Order;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.Optional;
+
 public interface OrderRepository extends JpaRepository<Order, Long> {
-    Order findByOrdId(Long ordId);
+    Optional<Order> findByOrdId(Long ordId);
 }

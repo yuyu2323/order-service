@@ -5,11 +5,9 @@ import lombok.Builder;
 import java.math.BigDecimal;
 
 @Builder
-public record OrderItemInfoResponseDTO(
-        Long ordItemId,
-        Long ordQty,
-        String ordItemSt,
-        BigDecimal paidAmt,
+public record OrderCancelResponseDTO(
+        BigDecimal rfnAmt,
+        BigDecimal totOrdAmt,
 
         ProductInfoResponseDTO product
 ) {}

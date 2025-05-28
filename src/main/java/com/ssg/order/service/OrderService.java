@@ -9,10 +9,10 @@ import com.ssg.order.repository.ProductRepository;
 import com.ssg.order.service.dto.OrderDTO;
 import com.ssg.order.service.dto.OrderItemDTO;
 import com.ssg.order.service.dto.ProductDTO;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -26,21 +26,15 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final ProductRepository productRepository;
 
+    @Transactional(readOnly = true)
     public OrderDTO findByOrdId(Long ordId){
-        Order order = orderRepository.findByOrdId(ordId);
-
-        OrderDTO result = OrderDTO.builder()
-                .ordId(order.getOrdId())
-                .orderItems(new ArrayList<>())
-                .build();
-
-        if(result == null){
-            throw new OrderException("조회된 주문이 없습니다.");
-        }
+        Order order = orderRepository.findByOrdId(ordId)
+                .orElseThrow(() -> new OrderException("주문 조회를 실패하였습니다."));;
 
         return orderEntityToDTO(order.getOrdId(), order.getOrderItems());
     }
 
+    @Transactional
     public OrderDTO createOrder(List<OrderItemDTO> orderItems){
 
         List<Long> prdIds = orderItems.stream()
@@ -87,6 +81,33 @@ public class OrderService {
 
         return orderEntityToDTO(saved.getOrdId(), saved.getOrderItems());
 
+    }
+
+    @Transactional
+    public OrderDTO cancelOrder(Long ordId, Long prdId){
+
+        Order order = orderRepository.findByOrdId(ordId)
+                .orElseThrow(() -> new OrderException("주문 조회를 실패하였습니다."));
+
+        Product product = productRepository.findByPrdId(prdId)
+                .orElseThrow(() -> new OrderException("상품 조회를 실패하였습니다."));;
+
+        for(OrderItem item : order.getOrderItems()){
+            if(item.getPrdId().equals(prdId)){
+                //이미 취소 처리 된 주문에 대한 검증
+                if("01".equals(item.getOrdItemSt())){
+                    throw new OrderException("이미 취소된 주문아이템 입니다.");
+                }
+
+                //상태변경
+                item.setOrdItemSt("01");
+                //재고 복구
+                product.setStkQty(product.getStkQty() + item.getOrdQty());
+
+            }
+        }
+
+        return orderEntityToDTO(order.getOrdId(), order.getOrderItems());
     }
 
     private OrderDTO orderEntityToDTO(Long ordId, List<OrderItem> orderItems){
