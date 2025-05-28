@@ -14,6 +14,8 @@ import java.math.BigDecimal;
 @Builder
 public class Product extends BaseEntity{
     @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "prd_seq")
+    @SequenceGenerator(name = "prd_seq", sequenceName = "prd_seq", allocationSize = 1)
     private Long prdId;
 
     private String prdNm;
