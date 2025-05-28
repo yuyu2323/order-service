@@ -18,8 +18,8 @@ public class OrderService {
 
     private final OrderRepository orderRepository;
 
-    public OrderDTO findByOrdNo(Long ordNo){
-        Order order = orderRepository.findByOrdId(ordNo);
+    public OrderDTO findByOrdId(Long ordId){
+        Order order = orderRepository.findByOrdId(ordId);
 
         OrderDTO result = OrderDTO.builder()
                 .ordId(order.getOrdId())
