@@ -6,6 +6,6 @@ import lombok.Builder;
 public record OrderItemInfoResponseDTO(
         Long ordItemId,
         Long ordQty,
-
+        String ordItemSt,
         ProductInfoResponseDTO product
 ) {}

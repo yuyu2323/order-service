@@ -38,6 +38,7 @@ public class OrderController {
                     OrderItemInfoResponseDTO.builder()
                             .ordItemId(item.ordItemId())
                             .ordQty(item.ordQty())
+                            .ordItemSt(item.ordItemSt())
                             .product(ProductInfoResponseDTO.builder()
                                     .prdId(item.product().prdId())
                                     .prdNm(item.product().prdNm())
