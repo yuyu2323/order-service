@@ -22,6 +22,7 @@ public class OrderController {
         this.orderService = orderService;
     }
 
+    /** 주문조회 기능*/
     @GetMapping("/{ordId}")
     public OrderInfoResponseDTO searchOrder(@PathVariable Long ordId){
 
@@ -50,6 +51,7 @@ public class OrderController {
         return result;
     }
 
+    /** 주문생성 기능*/
     @PostMapping()
     public OrderInfoResponseDTO createOrder(
             @RequestBody List<OrderCreateRequestDTO> orders
@@ -94,6 +96,7 @@ public class OrderController {
         return result;
     }
 
+    /** 주문취소 기능*/
     @DeleteMapping("/{ordId}/product/{prdId}")
     public OrderCancelResponseDTO cancelOrder(@PathVariable Long ordId, @PathVariable Long prdId){
         OrderDTO order = orderService.cancelOrder(ordId, prdId);
