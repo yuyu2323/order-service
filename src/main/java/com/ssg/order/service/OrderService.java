@@ -89,10 +89,6 @@ public class OrderService {
         Order order = orderRepository.findByOrdId(ordId)
                 .orElseThrow(() -> new OrderException("주문 조회를 실패하였습니다."));
 
-        if(order == null){
-            throw new OrderException("조회된 주문이 없습니다.");
-        }
-
         Product product = productRepository.findByPrdId(prdId)
                 .orElseThrow(() -> new OrderException("상품 조회를 실패하였습니다."));;
 
