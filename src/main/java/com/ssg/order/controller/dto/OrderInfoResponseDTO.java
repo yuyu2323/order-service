@@ -7,7 +7,7 @@ import java.util.List;
 
 @Builder
 public record OrderInfoResponseDTO(
-        Long ordNo,
+        Long ordId,
         BigDecimal sumPrice,
         List<OrderItemInfoResponseDTO> orderItems
 ) {}

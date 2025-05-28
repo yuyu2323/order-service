@@ -14,8 +14,9 @@ import java.math.BigDecimal;
 @Builder
 public class OrderItem extends BaseEntity{
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long ordItemNo; //아이템ID
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "ord_item_seq")
+    @SequenceGenerator(name = "ord_item_seq", sequenceName = "ord_item_seq", allocationSize = 1)
+    private Long ordItemId; //아이템ID
 
     private String ordItemSt; //주문상태 주문:00 취소:01
 

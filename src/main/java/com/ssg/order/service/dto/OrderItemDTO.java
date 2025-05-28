@@ -6,7 +6,7 @@ import java.math.BigDecimal;
 
 @Builder
 public record OrderItemDTO(
-        Long ordItemNo,
+        Long ordItemId,
         String ordItemSt,
         Long ordQty,
 

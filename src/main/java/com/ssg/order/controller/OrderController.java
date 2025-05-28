@@ -32,13 +32,13 @@ public class OrderController {
 
         OrderInfoResponseDTO result = OrderInfoResponseDTO.builder()
                 .orderItems(new ArrayList<>())
-                .ordNo(order.ordNo())
+                .ordId(order.ordId())
                 .build();
 
         for(OrderItemDTO item : order.orderItems()){
             result.orderItems().add(
                     OrderItemInfoResponseDTO.builder()
-                            .ordItemNo(item.ordItemNo())
+                            .ordItemId(item.ordItemId())
                             .ordQty(item.ordQty())
                             .product(ProductInfoResponseDTO.builder()
                                     .prdId(item.product().prdId())

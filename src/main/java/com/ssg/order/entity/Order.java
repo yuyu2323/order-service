@@ -14,8 +14,9 @@ import java.util.List;
 @Builder
 public class Order extends BaseEntity{
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long ordNo; //주문번호
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "ord_seq")
+    @SequenceGenerator(name = "ord_seq", sequenceName = "ord_seq", allocationSize = 1)
+    private Long ordId; //주문Id
 
     @OneToMany
     @JoinColumn(name = "ord_no")  // FK 컬럼 이름

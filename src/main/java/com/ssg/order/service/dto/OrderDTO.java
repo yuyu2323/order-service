@@ -6,7 +6,7 @@ import java.util.List;
 
 @Builder
 public record OrderDTO(
-    Long ordNo,
+    Long ordId,
     List<OrderItemDTO> orderItems
 )
 {}

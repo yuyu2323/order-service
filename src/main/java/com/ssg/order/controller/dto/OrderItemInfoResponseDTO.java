@@ -4,7 +4,7 @@ import lombok.Builder;
 
 @Builder
 public record OrderItemInfoResponseDTO(
-        Long ordItemNo,
+        Long ordItemId,
         Long ordQty,
 
         ProductInfoResponseDTO product
