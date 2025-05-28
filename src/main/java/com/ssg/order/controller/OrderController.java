@@ -52,4 +52,47 @@ public class OrderController {
         return result;
     }
 
+    @PostMapping()
+    public OrderInfoResponseDTO createOrder(
+            @RequestBody List<OrderCreateRequestDTO> orders
+    ){
+        List<OrderItemDTO> orderItems = new ArrayList<>();
+
+        for(OrderCreateRequestDTO item : orders){
+            orderItems.add(
+                    OrderItemDTO.builder()
+                            .ordQty(item.ordQty())
+                            .product(
+                                    ProductDTO.builder()
+                                            .prdId(item.prdId())
+                                            .build()
+                            )
+                            .build()
+            );
+        }
+
+        OrderDTO order = orderService.createOrder(orderItems);
+
+        OrderInfoResponseDTO result = OrderInfoResponseDTO.builder()
+                .orderItems(new ArrayList<>())
+                .ordId(order.ordId())
+                .build();
+
+        for(OrderItemDTO item : order.orderItems()){
+            result.orderItems().add(
+                    OrderItemInfoResponseDTO.builder()
+                            .ordItemId(item.ordItemId())
+                            .ordQty(item.ordQty())
+                            .product(ProductInfoResponseDTO.builder()
+                                    .prdId(item.product().prdId())
+                                    .prdNm(item.product().prdNm())
+                                    .dcAmt(item.product().dcAmt())
+                                    .stdUprc(item.product().stdUprc())
+                                    .build())
+                            .build()
+            );
+        }
+
+        return result;
+    }
 }
