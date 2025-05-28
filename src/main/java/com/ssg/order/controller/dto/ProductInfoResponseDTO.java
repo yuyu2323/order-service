@@ -9,6 +9,5 @@ public record ProductInfoResponseDTO(
         Long prdId,
         String prdNm,
         BigDecimal stdUprc,
-        BigDecimal dcAmt,
-        Long stkQty
+        BigDecimal dcAmt
 ) {}
