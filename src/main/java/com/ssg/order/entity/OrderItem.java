@@ -26,7 +26,11 @@ public class OrderItem extends BaseEntity{
     private BigDecimal dcAmt; //할인금액
     private Long ordQty; //주문수량
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ord_no")  // FK 컬럼 이름
     private Order order;
+
+    public void setOrder(Order order) {
+        this.order = order;
+    }
 }
