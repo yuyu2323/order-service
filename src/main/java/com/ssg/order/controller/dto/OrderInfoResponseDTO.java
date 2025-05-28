@@ -8,6 +8,6 @@ import java.util.List;
 @Builder
 public record OrderInfoResponseDTO(
         Long ordId,
-        BigDecimal sumPrice,
+        BigDecimal totOrdAmt,
         List<OrderItemInfoResponseDTO> orderItems
 ) {}

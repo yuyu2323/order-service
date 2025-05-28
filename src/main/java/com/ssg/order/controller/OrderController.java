@@ -28,17 +28,24 @@ public class OrderController {
 
         OrderDTO order = orderService.findByOrdId(ordId);
 
-        OrderInfoResponseDTO result = OrderInfoResponseDTO.builder()
-                .orderItems(new ArrayList<>())
-                .ordId(order.ordId())
-                .build();
+        List<OrderItemInfoResponseDTO> resultItems = new ArrayList<>();
+        BigDecimal totalAmount = BigDecimal.ZERO;
 
         for(OrderItemDTO item : order.orderItems()){
-            result.orderItems().add(
+
+            BigDecimal paidAmt = BigDecimal.valueOf(item.ordQty()).multiply(item.product().stdUprc().subtract(item.product().dcAmt()));
+
+            if("00".equals(item.ordItemSt())) {
+                //주문총합 = 기존총합 + (주문수량*(기존단가-할인금액))
+                totalAmount = totalAmount.add(paidAmt);
+            }
+
+            resultItems.add(
                     OrderItemInfoResponseDTO.builder()
                             .ordItemId(item.ordItemId())
                             .ordQty(item.ordQty())
                             .ordItemSt(item.ordItemSt())
+                            .paidAmt(paidAmt)
                             .product(ProductInfoResponseDTO.builder()
                                     .prdId(item.product().prdId())
                                     .prdNm(item.product().prdNm())
@@ -49,7 +56,11 @@ public class OrderController {
             );
         }
 
-        return result;
+        return OrderInfoResponseDTO.builder()
+                .orderItems(resultItems)
+                .totOrdAmt(totalAmount)
+                .ordId(order.ordId())
+                .build();
     }
 
     /** 주문생성 기능*/
@@ -74,16 +85,24 @@ public class OrderController {
 
         OrderDTO order = orderService.createOrder(orderItems);
 
-        OrderInfoResponseDTO result = OrderInfoResponseDTO.builder()
-                .orderItems(new ArrayList<>())
-                .ordId(order.ordId())
-                .build();
+        List<OrderItemInfoResponseDTO> resultItems = new ArrayList<>();
+        BigDecimal totalAmount = BigDecimal.ZERO;
 
         for(OrderItemDTO item : order.orderItems()){
-            result.orderItems().add(
+
+            BigDecimal paidAmt = BigDecimal.valueOf(item.ordQty()).multiply(item.product().stdUprc().subtract(item.product().dcAmt()));
+
+            if("00".equals(item.ordItemSt())) {
+                //주문총합 = 기존총합 + (주문수량*(기존단가-할인금액))
+                totalAmount = totalAmount.add(paidAmt);
+            }
+
+            resultItems.add(
                     OrderItemInfoResponseDTO.builder()
                             .ordItemId(item.ordItemId())
                             .ordQty(item.ordQty())
+                            .ordItemSt(item.ordItemSt())
+                            .paidAmt(paidAmt)
                             .product(ProductInfoResponseDTO.builder()
                                     .prdId(item.product().prdId())
                                     .prdNm(item.product().prdNm())
@@ -94,7 +113,11 @@ public class OrderController {
             );
         }
 
-        return result;
+        return OrderInfoResponseDTO.builder()
+                .orderItems(resultItems)
+                .totOrdAmt(totalAmount)
+                .ordId(order.ordId())
+                .build();
     }
 
     /** 주문취소 기능*/
@@ -118,6 +141,7 @@ public class OrderController {
                 resultProduct = item.product();
             }
         }
+
         if(resultProduct == null || refundAmount == null){
             throw new OrderException("조회 비즈니스 에러입니다.");
         }
