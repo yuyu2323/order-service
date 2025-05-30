@@ -26,5 +26,5 @@ H2 Console: http://localhost:8080/h2-console (ID: order PW:)
 
 - 주문 생성 API (`POST /v1/order`)
 - 주문 조회 API (`GET /v1/order/{ordId}`)
-- 주문 취소 API (`DELETE /v1/order/{ordId}/product/{prdId}`)
+- 주문 취소 API (`PUT /v1/order/{ordId}/product/{prdId}/cancel`)
 
