@@ -7,7 +7,9 @@ import com.ssg.order.service.dto.OrderDTO;
 import com.ssg.order.service.dto.OrderItemDTO;
 import com.ssg.order.service.dto.ProductDTO;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -16,6 +18,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/v1/order")
+@Validated
 public class OrderController {
 
     private final OrderService orderService;
@@ -26,7 +29,7 @@ public class OrderController {
 
     /** 주문조회 기능*/
     @GetMapping("/{ordId}")
-    public OrderInfoResponseDTO searchOrder(@Valid @NotEmpty @PathVariable Long ordId){
+    public OrderInfoResponseDTO searchOrder(@PathVariable @Min(1) Long ordId){
 
         OrderDTO order = orderService.findByOrdId(ordId);
 
@@ -68,7 +71,7 @@ public class OrderController {
     /** 주문생성 기능*/
     @PostMapping()
     public OrderInfoResponseDTO createOrder(
-            @Valid @NotEmpty @RequestBody List<OrderCreateRequestDTO> orders
+            @RequestBody @NotEmpty(message = "주문 항목은 비어 있을 수 없습니다.") List<@Valid OrderCreateRequestDTO> orders
     ){
         List<OrderItemDTO> orderItems = new ArrayList<>();
 
@@ -124,7 +127,7 @@ public class OrderController {
 
     /** 주문취소 기능*/
     @PutMapping("/{ordId}/product/{prdId}/cancel")
-    public OrderCancelResponseDTO cancelOrder(@PathVariable Long ordId, @PathVariable Long prdId){
+    public OrderCancelResponseDTO cancelOrder(@PathVariable @Min(1) Long ordId, @PathVariable @Min(1) Long prdId){
         OrderDTO order = orderService.cancelOrder(ordId, prdId);
 
         BigDecimal totalAmount = BigDecimal.ZERO; //취소 후 전체 남은 금액
