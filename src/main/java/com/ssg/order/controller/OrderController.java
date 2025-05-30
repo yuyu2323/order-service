@@ -121,7 +121,7 @@ public class OrderController {
     }
 
     /** 주문취소 기능*/
-    @DeleteMapping("/{ordId}/product/{prdId}")
+    @PutMapping("/{ordId}/product/{prdId}/cancel")
     public OrderCancelResponseDTO cancelOrder(@PathVariable Long ordId, @PathVariable Long prdId){
         OrderDTO order = orderService.cancelOrder(ordId, prdId);
 
