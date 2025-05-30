@@ -1,4 +1,4 @@
-package com.ssg.order.common;
+package com.ssg.order.common.enums;
 
 import java.util.Arrays;
 

@@ -1,6 +1,6 @@
 package com.ssg.order.service;
 
-import com.ssg.order.common.OrderStatus;
+import com.ssg.order.common.enums.OrderStatus;
 import com.ssg.order.entity.Order;
 import com.ssg.order.entity.OrderItem;
 import com.ssg.order.entity.Product;

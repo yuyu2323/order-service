@@ -1,6 +1,6 @@
 package com.ssg.order.controller;
 
-import com.ssg.order.common.OrderStatus;
+import com.ssg.order.common.enums.OrderStatus;
 import com.ssg.order.controller.dto.*;
 import com.ssg.order.exception.OrderException;
 import com.ssg.order.service.OrderService;
