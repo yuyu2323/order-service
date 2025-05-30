@@ -6,6 +6,8 @@ import com.ssg.order.service.OrderService;
 import com.ssg.order.service.dto.OrderDTO;
 import com.ssg.order.service.dto.OrderItemDTO;
 import com.ssg.order.service.dto.ProductDTO;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -24,7 +26,7 @@ public class OrderController {
 
     /** 주문조회 기능*/
     @GetMapping("/{ordId}")
-    public OrderInfoResponseDTO searchOrder(@PathVariable Long ordId){
+    public OrderInfoResponseDTO searchOrder(@Valid @NotEmpty @PathVariable Long ordId){
 
         OrderDTO order = orderService.findByOrdId(ordId);
 
@@ -66,7 +68,7 @@ public class OrderController {
     /** 주문생성 기능*/
     @PostMapping()
     public OrderInfoResponseDTO createOrder(
-            @RequestBody List<OrderCreateRequestDTO> orders
+            @Valid @NotEmpty @RequestBody List<OrderCreateRequestDTO> orders
     ){
         List<OrderItemDTO> orderItems = new ArrayList<>();
 

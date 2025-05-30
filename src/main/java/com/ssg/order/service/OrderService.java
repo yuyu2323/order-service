@@ -28,6 +28,10 @@ public class OrderService {
 
     @Transactional(readOnly = true)
     public OrderDTO findByOrdId(Long ordId){
+        if(ordId ==  null){
+            throw new OrderException("주문 검색 필수값 확인이 필요합니다.");
+        }
+
         Order order = orderRepository.findByOrdId(ordId)
                 .orElseThrow(() -> new OrderException("주문 조회를 실패하였습니다."));;
 
@@ -36,6 +40,10 @@ public class OrderService {
 
     @Transactional
     public OrderDTO createOrder(List<OrderItemDTO> orderItems){
+
+        if(orderItems ==  null || orderItems.isEmpty()){
+            throw new OrderException("주문 생성 아이템이 비었습니다.");
+        }
 
         List<Long> prdIds = orderItems.stream()
                 .map(dto -> dto.product().prdId())
@@ -85,6 +93,10 @@ public class OrderService {
 
     @Transactional
     public OrderDTO cancelOrder(Long ordId, Long prdId){
+
+        if(ordId ==  null || prdId == null){
+            throw new OrderException("주문 취소 필수값 확인이 필요합니다.");
+        }
 
         Order order = orderRepository.findByOrdId(ordId)
                 .orElseThrow(() -> new OrderException("주문 조회를 실패하였습니다."));
