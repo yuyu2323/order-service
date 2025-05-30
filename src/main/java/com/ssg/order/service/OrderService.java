@@ -1,5 +1,6 @@
 package com.ssg.order.service;
 
+import com.ssg.order.common.OrderStatus;
 import com.ssg.order.entity.Order;
 import com.ssg.order.entity.OrderItem;
 import com.ssg.order.entity.Product;
@@ -79,7 +80,7 @@ public class OrderService {
                     .prdId(product.getPrdId())
                     .stdUprc(product.getStdUprc())
                     .dcAmt(product.getDcAmt())
-                    .ordItemSt("00")
+                    .ordItemSt(OrderStatus.CREATED.getCode())
                     .build();
 
             order.addOrderItem(addItem);
@@ -107,12 +108,12 @@ public class OrderService {
         for(OrderItem item : order.getOrderItems()){
             if(item.getPrdId().equals(prdId)){
                 //이미 취소 처리 된 주문에 대한 검증
-                if("01".equals(item.getOrdItemSt())){
+                if(OrderStatus.CANCELED.getCode().equals(item.getOrdItemSt())){
                     throw new OrderException("이미 취소된 주문아이템 입니다.");
                 }
 
                 //상태변경
-                item.setOrdItemSt("01");
+                item.setOrdItemSt(OrderStatus.CANCELED.getCode());
                 //재고 복구
                 product.setStkQty(product.getStkQty() + item.getOrdQty());
 

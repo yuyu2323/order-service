@@ -1,5 +1,6 @@
 package com.ssg.order.controller;
 
+import com.ssg.order.common.OrderStatus;
 import com.ssg.order.controller.dto.*;
 import com.ssg.order.exception.OrderException;
 import com.ssg.order.service.OrderService;
@@ -40,7 +41,7 @@ public class OrderController {
 
             BigDecimal paidAmt = BigDecimal.valueOf(item.ordQty()).multiply(item.product().stdUprc().subtract(item.product().dcAmt()));
 
-            if("00".equals(item.ordItemSt())) {
+            if(OrderStatus.CREATED.getCode().equals(item.ordItemSt())) {
                 //주문총합 = 기존총합 + (주문수량*(기존단가-할인금액))
                 totalAmount = totalAmount.add(paidAmt);
             }
@@ -97,7 +98,7 @@ public class OrderController {
 
             BigDecimal paidAmt = BigDecimal.valueOf(item.ordQty()).multiply(item.product().stdUprc().subtract(item.product().dcAmt()));
 
-            if("00".equals(item.ordItemSt())) {
+            if(OrderStatus.CREATED.getCode().equals(item.ordItemSt())) {
                 //주문총합 = 기존총합 + (주문수량*(기존단가-할인금액))
                 totalAmount = totalAmount.add(paidAmt);
             }
@@ -137,11 +138,11 @@ public class OrderController {
         for(OrderItemDTO item : order.orderItems()){
             //해당 아이템 결제금액
             BigDecimal itemAmount = BigDecimal.valueOf(item.ordQty()).multiply(item.product().stdUprc().subtract(item.product().dcAmt()));
-            if("00".equals(item.ordItemSt())) {
+            if(OrderStatus.CREATED.getCode().equals(item.ordItemSt())) {
                 //주문총합 = 기존총합 + (주문수량*(기존단가-할인금액))
                 totalAmount = totalAmount.add(itemAmount);
             }
-            else if("01".equals(item.ordItemSt()) && prdId.equals(item.product().prdId())){
+            else if(OrderStatus.CANCELED.getCode().equals(item.ordItemSt()) && prdId.equals(item.product().prdId())){
                 refundAmount = itemAmount;
                 resultProduct = item.product();
             }
