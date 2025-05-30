@@ -1,5 +1,6 @@
 package com.ssg.order.service;
 
+import com.ssg.order.common.enums.OrderStatus;
 import com.ssg.order.entity.Order;
 import com.ssg.order.entity.OrderItem;
 import com.ssg.order.entity.Product;
@@ -28,6 +29,10 @@ public class OrderService {
 
     @Transactional(readOnly = true)
     public OrderDTO findByOrdId(Long ordId){
+        if(ordId ==  null){
+            throw new OrderException("주문 검색 필수값 확인이 필요합니다.");
+        }
+
         Order order = orderRepository.findByOrdId(ordId)
                 .orElseThrow(() -> new OrderException("주문 조회를 실패하였습니다."));;
 
@@ -36,6 +41,10 @@ public class OrderService {
 
     @Transactional
     public OrderDTO createOrder(List<OrderItemDTO> orderItems){
+
+        if(orderItems ==  null || orderItems.isEmpty()){
+            throw new OrderException("주문 생성 아이템이 비었습니다.");
+        }
 
         List<Long> prdIds = orderItems.stream()
                 .map(dto -> dto.product().prdId())
@@ -71,7 +80,7 @@ public class OrderService {
                     .prdId(product.getPrdId())
                     .stdUprc(product.getStdUprc())
                     .dcAmt(product.getDcAmt())
-                    .ordItemSt("00")
+                    .ordItemSt(OrderStatus.CREATED.getCode())
                     .build();
 
             order.addOrderItem(addItem);
@@ -86,6 +95,10 @@ public class OrderService {
     @Transactional
     public OrderDTO cancelOrder(Long ordId, Long prdId){
 
+        if(ordId ==  null || prdId == null){
+            throw new OrderException("주문 취소 필수값 확인이 필요합니다.");
+        }
+
         Order order = orderRepository.findByOrdId(ordId)
                 .orElseThrow(() -> new OrderException("주문 조회를 실패하였습니다."));
 
@@ -95,12 +108,12 @@ public class OrderService {
         for(OrderItem item : order.getOrderItems()){
             if(item.getPrdId().equals(prdId)){
                 //이미 취소 처리 된 주문에 대한 검증
-                if("01".equals(item.getOrdItemSt())){
+                if(OrderStatus.CANCELED.getCode().equals(item.getOrdItemSt())){
                     throw new OrderException("이미 취소된 주문아이템 입니다.");
                 }
 
                 //상태변경
-                item.setOrdItemSt("01");
+                item.setOrdItemSt(OrderStatus.CANCELED.getCode());
                 //재고 복구
                 product.setStkQty(product.getStkQty() + item.getOrdQty());
 

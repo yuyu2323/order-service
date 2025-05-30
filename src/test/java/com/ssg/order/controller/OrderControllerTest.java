@@ -20,7 +20,7 @@ import java.util.List;
 
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -92,5 +92,75 @@ class OrderControllerTest {
                 .andExpect(jsonPath("$.orderItems[1].product.prdNm").value("신라면 멀티팩"));;
 
 
+    }
+
+    @Test
+    void searchOrder_success() throws Exception {
+        OrderItemDTO item = OrderItemDTO.builder()
+                .ordItemId(1L)
+                .ordQty(1L)
+                .ordItemSt("00")
+                .product(ProductDTO.builder()
+                        .prdId(2L)
+                        .prdNm("상품B")
+                        .dcAmt(BigDecimal.valueOf(500))
+                        .stdUprc(BigDecimal.valueOf(4000))
+                        .build())
+                .build();
+
+        OrderDTO orderDTO = OrderDTO.builder()
+                .ordId(10L)
+                .orderItems(List.of(item))
+                .build();
+
+        Mockito.when(orderService.findByOrdId(10L)).thenReturn(orderDTO);
+
+        mockMvc.perform(get("/v1/order/10"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.ordId").value(10L))
+                .andExpect(jsonPath("$.orderItems[0].product.prdNm").value("상품B"))
+                .andExpect(jsonPath("$.totOrdAmt").value(3500)); // (4000-500)*1
+    }
+
+    @Test
+    void cancelOrder_success() throws Exception {
+        ProductDTO product = ProductDTO.builder()
+                .prdId(3L)
+                .prdNm("상품A")
+                .dcAmt(BigDecimal.valueOf(300))
+                .stdUprc(BigDecimal.valueOf(3000))
+                .build();
+
+        OrderItemDTO canceledItem = OrderItemDTO.builder()
+                .ordItemId(2L)
+                .ordQty(2L)
+                .ordItemSt("01")
+                .product(product)
+                .build();
+
+        OrderItemDTO remainingItem = OrderItemDTO.builder()
+                .ordItemId(3L)
+                .ordQty(1L)
+                .ordItemSt("00")
+                .product(ProductDTO.builder()
+                        .prdId(4L)
+                        .prdNm("상품B")
+                        .dcAmt(BigDecimal.valueOf(0))
+                        .stdUprc(BigDecimal.valueOf(2000))
+                        .build())
+                .build();
+
+        OrderDTO orderDTO = OrderDTO.builder()
+                .ordId(20L)
+                .orderItems(List.of(canceledItem, remainingItem))
+                .build();
+
+        Mockito.when(orderService.cancelOrder(20L, 3L)).thenReturn(orderDTO);
+
+        mockMvc.perform(put("/v1/order/20/product/3/cancel"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.rfnAmt").value(5400)) // (3000-300)*2
+                .andExpect(jsonPath("$.totOrdAmt").value(2000))
+                .andExpect(jsonPath("$.product.prdNm").value("상품A"));
     }
 }
