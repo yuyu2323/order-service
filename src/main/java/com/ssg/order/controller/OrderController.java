@@ -7,6 +7,9 @@ import com.ssg.order.service.OrderService;
 import com.ssg.order.service.dto.OrderDTO;
 import com.ssg.order.service.dto.OrderItemDTO;
 import com.ssg.order.service.dto.ProductDTO;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
@@ -20,6 +23,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/v1/order")
 @Validated
+@Tag(name = "Order API", description = "주문 관련 API입니다.")
 public class OrderController {
 
     private final OrderService orderService;
@@ -30,7 +34,10 @@ public class OrderController {
 
     /** 주문조회 기능*/
     @GetMapping("/{ordId}")
-    public OrderInfoResponseDTO searchOrder(@PathVariable @Min(1) Long ordId){
+    @Operation(summary = "주문 조회", description = "주문 번호로 주문 상세 정보를 조회합니다.")
+    public OrderInfoResponseDTO searchOrder(
+            @Parameter(description = "주문번호", example = "1")
+            @PathVariable @Min(1) Long ordId){
 
         OrderDTO order = orderService.findByOrdId(ordId);
 
@@ -71,6 +78,7 @@ public class OrderController {
 
     /** 주문생성 기능*/
     @PostMapping()
+    @Operation(summary = "주문 생성", description = "주문을 생성합니다.")
     public OrderInfoResponseDTO createOrder(
             @RequestBody @NotEmpty(message = "주문 항목은 비어 있을 수 없습니다.") List<@Valid OrderCreateRequestDTO> orders
     ){
@@ -128,7 +136,12 @@ public class OrderController {
 
     /** 주문취소 기능*/
     @PutMapping("/{ordId}/product/{prdId}/cancel")
-    public OrderCancelResponseDTO cancelOrder(@PathVariable @Min(1) Long ordId, @PathVariable @Min(1) Long prdId){
+    @Operation(summary = "주문 취소", description = "생성된 주문을 취소합니다.")
+    public OrderCancelResponseDTO cancelOrder(
+            @Parameter(description = "주문번호", example = "1")
+            @PathVariable @Min(1) Long ordId,
+            @Parameter(description = "상품 ID", example = "1000000002")
+            @PathVariable @Min(1) Long prdId){
         OrderDTO order = orderService.cancelOrder(ordId, prdId);
 
         BigDecimal totalAmount = BigDecimal.ZERO; //취소 후 전체 남은 금액
